@@ -100,29 +100,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initialization ---
     const initializeGame = () => { /* ... (same as before) ... */
         console.log("[script.js] Initializing System Interface...");
-        const chosenClass = getLocalStorage('chosenClass', null);
-        if (!chosenClass) {
+        // Check the 'chosenClass' key first to decide UI flow
+        const chosenClassSaved = getLocalStorage('chosenClass', null); // Read direct key
+
+        if (!chosenClassSaved) {
+            // No class chosen - show selection screen
             console.log("[script.js] No class chosen. Displaying class selection.");
             displayClassSelection();
             if(mainGameContainer) mainGameContainer.style.display = 'none';
         } else {
-            console.log(`[script.js] Class '${chosenClass}' found. Starting main game.`);
+            // Class has been chosen previously - load main game
+            console.log(`[script.js] Class '${chosenClassSaved}' found. Starting main game.`);
              if(classSelectionOverlay) classSelectionOverlay.style.display = 'none';
              if(mainGameContainer) mainGameContainer.style.display = 'block';
-            initializeMainGame(); // Call the function to setup the main game
+            initializeMainGame(); // Setup the main game UI and logic
         }
     };
 
     const initializeMainGame = () => {
         // Load stats FIRST to ensure class is available for other functions
-        const initialStats = loadUserStats();
+        const initialStats = loadUserStats(); // This reads from 'userStats' key
         updateUserStatsDisplay(initialStats); // Update display immediately with loaded stats
 
         checkForDueReflections();
         loadNextQuest(); // Load quest AFTER stats are loaded
         setupEventListeners();
         console.log("[script.js] System Online.");
-        // No need to update display again here, already done above
     };
 
 
@@ -141,7 +144,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!chosenClassName) return;
 
         console.log(`[script.js] Class chosen: ${chosenClassName}`);
-        setLocalStorage('chosenClass', chosenClassName); // Save the chosen class
+
+        // --- FIX START: Save class name INSIDE the userStats object ---
+        const stats = loadUserStats(); // Get current stats (or defaults)
+        stats.chosenClass = chosenClassName; // Update the class property
+        setLocalStorage('userStats', stats); // Save the entire updated stats object
+        // --- FIX END ---
+
+        // Also save directly to chosenClass key for initial load check consistency (optional but safe)
+        setLocalStorage('chosenClass', chosenClassName);
 
         // Apply starting boon placeholder
         applyStartingBoon(chosenClassName);
@@ -151,8 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(mainGameContainer) mainGameContainer.style.display = 'block';
 
         // Initialize the main game systems now
-        // **Crucially, loadUserStats() here will now include the class**
-        initializeMainGame(); // This now loads stats, quests, listeners AND updates display
+        initializeMainGame(); // This will now load stats including the class
 
         showMessage(`Path chosen: ${chosenClassName}. Your evolution begins.`, 'success');
     };
@@ -164,21 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Example: Triggering a specific starting quest for Geomancer
         if (className === 'Geomancer') {
             console.log("[script.js] Geomancer chosen - Boon logic would try to set specific starting quest here.");
-            // Option 1: Directly set 'currentQuest' if loadNextQuest hasn't run yet
-            // currentQuest = ALL_QUESTS.find(q => q.id === 'geomancer_start01');
-            // Option 2: Set a flag that loadNextQuest checks
+            // Option: Set a flag in localStorage that loadNextQuest() checks
             // setLocalStorage('forceNextQuestId', 'geomancer_start01');
-            // Option 3: Modify the ALL_QUESTS array temporarily (more complex)
-
-            // For now, this function doesn't change game state. Add real logic here.
+            // loadNextQuest() would need to be modified to look for this flag
+            // and load the quest if found, then clear the flag.
+            // (See commented out example in loadNextQuest)
+            showMessage("Geomancer Boon: Attune to the Leylines quest should be prioritized (Implementation Pending).", "info");
         }
-        // Add similar 'if' blocks for other classes and their boons.
+        // Add similar 'if' blocks for other classes.
         // --- End Placeholder ---
     };
 
 
     // --- Event Listeners Setup ---
-    const setupEventListeners = () => { /* ... (same as before, includes safety checks) ... */
+    const setupEventListeners = () => { /* ... (same as before) ... */
         if (beginQuestBtn) beginQuestBtn.addEventListener('click', handleBeginQuest); else console.warn("Element #begin-quest-btn not found for listener");
         if (proofForm) proofForm.addEventListener('submit', handleProofSubmit); else console.warn("Element #proof-form not found for listener");
         if (cancelQuestBtn) cancelQuestBtn.addEventListener('click', handleCancelQuest); else console.warn("Element #cancel-quest-btn not found for listener");
@@ -192,128 +201,132 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("[script.js] Scanning for next available directive...");
         clearMessage(); hideProofSubmission(); hideCooldownMessage(); hideNoQuestsMessage();
 
-        // --- Boon Logic Placeholder ---
-        // Check if a specific quest needs to be forced (e.g., by class choice boon)
+        // --- Boon Logic Example Implementation (Commented Out) ---
+        // // Check if a specific quest needs to be forced by a boon
         // const forcedQuestId = getLocalStorage('forceNextQuestId', null);
         // if (forcedQuestId) {
         //     const forcedQuest = ALL_QUESTS.find(q => q.id === forcedQuestId);
-        //     if (forcedQuest) {
+        //     // Check if this forced quest has already been completed (including reflection)
+        //     const completedQuestsCheck = getLocalStorage('completedQuests', {});
+        //     const isForcedQuestDone = completedQuestsCheck[forcedQuestId] && completedQuestsCheck[forcedQuestId].reflectionCompleted;
+
+        //     if (forcedQuest && !isForcedQuestDone) {
         //         currentQuest = forcedQuest;
-        //         setLocalStorage('forceNextQuestId', null); // Clear the flag
+        //         setLocalStorage('forceNextQuestId', null); // Clear the flag *only* if quest is loaded
         //         displayQuest(currentQuest);
-        //         console.log(`[script.js] Forced starting quest: ${currentQuest.title}`);
+        //         console.log(`[script.js] Forced starting quest loaded: ${currentQuest.title}`);
         //         return; // Skip normal quest finding
         //     } else {
-        //         setLocalStorage('forceNextQuestId', null); // Clear flag if quest not found
-        //         console.warn(`[script.js] Forced quest ID ${forcedQuestId} not found.`);
+        //         // Clear flag if quest not found or already done
+        //         setLocalStorage('forceNextQuestId', null);
+        //         if (!forcedQuest) console.warn(`[script.js] Forced quest ID ${forcedQuestId} not found.`);
+        //         if (isForcedQuestDone) console.log(`[script.js] Forced quest ${forcedQuestId} already completed.`);
         //     }
         // }
-        // --- End Boon Logic Placeholder ---
+        // --- End Boon Logic Example ---
 
         const completedQuests = getLocalStorage('completedQuests', {}); const questCooldowns = getLocalStorage('questCooldowns', {}); const now = Date.now();
         let availableQuests = ALL_QUESTS.filter(quest => {
-            // Exclude class-specific starting quests unless the class matches (or no class needed)
             const stats = loadUserStats(); // Need stats to check class
+            // Skip quest if it's designated for a *different* starting class
             if (quest.startingClass && quest.startingClass !== stats.chosenClass) {
-                return false; // Skip quest if it's for a different starting class
+                return false;
             }
             // Standard availability checks
             const isCompletedRecord = completedQuests[quest.id]; const cooldownEndTime = questCooldowns[quest.id]; const isOnCooldown = cooldownEndTime && now < cooldownEndTime; const fullyCompleted = isCompletedRecord && isCompletedRecord.reflectionCompleted;
             return !fullyCompleted && !isOnCooldown;
         });
 
-        console.log(`[script.js] Found ${availableQuests.length} potential directives.`);
+        console.log(`[script.js] Found ${availableQuests.length} potential directives after filtering.`); // Updated log
+
         if (availableQuests.length > 0) {
-            // Prioritize starting quests if available and not completed
-            const startingQuest = availableQuests.find(q => q.startingClass && !completedQuests[q.id]);
+            // Prioritize the player's starting class quest if it's available and not done
+            const stats = loadUserStats();
+            const startingQuest = availableQuests.find(q => q.startingClass === stats.chosenClass && !completedQuests[q.id]); // Check completion here too
+
             if (startingQuest) {
                  currentQuest = startingQuest;
                  console.log("[script.js] Prioritizing starting class quest.");
             } else {
-                 // Otherwise, just pick the first available standard quest
-                 // Exclude starting quests of *other* classes if they somehow passed the filter
-                 const standardQuests = availableQuests.filter(q => !q.startingClass || q.startingClass === loadUserStats().chosenClass);
-                 currentQuest = standardQuests.length > 0 ? standardQuests[0] : null;
+                 // Filter out starting quests belonging to *any* class if no specific starting quest is pending
+                 const standardQuests = availableQuests.filter(q => !q.startingClass);
+                 currentQuest = standardQuests.length > 0 ? standardQuests[0] : null; // Pick first standard quest
+                 if(!currentQuest) console.log("[script.js] No standard quests available after filtering.");
             }
 
             if (currentQuest) {
                 displayQuest(currentQuest);
             } else {
-                 // If filtering removed all quests, show no quests message
+                 // If filtering removed all quests (e.g., only other classes' starting quests were left)
                  displayNoQuestsMessage();
             }
 
         } else {
-            // Standard cooldown / no quests logic
+            // Standard cooldown / no quests logic if initial filter found nothing
             const activeCooldowns = Object.entries(questCooldowns).filter(([id, endTime]) => now < endTime);
             if (activeCooldowns.length > 0) { const soonestCooldown = activeCooldowns.reduce((soonest, [id, endTime]) => { return endTime < soonest.endTime ? { id, endTime } : soonest; }, { id: null, endTime: Infinity }); displayCooldownMessage(soonestCooldown.endTime); }
             else { displayNoQuestsMessage(); currentQuest = null; }
         }
     };
-    // Other quest functions (displayQuest, displayCooldownMessage, etc.) remain the same
-    const displayQuest = (quest) => { /* ... (same as before) ... */ console.log(`[script.js] Displaying Directive: ${quest.title}`); };
-    const displayCooldownMessage = (cooldownEndTime) => { /* ... (same as before) ... */ console.log(`[script.js] System on cooldown...`); };
-    const displayNoQuestsMessage = () => { /* ... (same as before) ... */ console.log("[script.js] No available directives."); };
-    const handleBeginQuest = () => { /* ... (same as before) ... */ console.log(`[script.js] Accepting Directive: ${currentQuest.title}`); };
-    const handleCancelQuest = () => { /* ... (same as before) ... */ console.log(`[script.js] Directive Aborted: ${currentQuest?.title}`); };
+    // Other quest functions remain the same
+    const displayQuest = (quest) => { /* ... */ console.log(`[script.js] Displaying Directive: ${quest.title}`); };
+    const displayCooldownMessage = (cooldownEndTime) => { /* ... */ console.log(`[script.js] System on cooldown...`); };
+    const displayNoQuestsMessage = () => { /* ... */ console.log("[script.js] No available directives."); };
+    const handleBeginQuest = () => { /* ... */ console.log(`[script.js] Accepting Directive: ${currentQuest.title}`); };
+    const handleCancelQuest = () => { /* ... */ console.log(`[script.js] Directive Aborted: ${currentQuest?.title}`); };
 
 
     // --- Proof Submission & Verification --- (Functions remain the same)
-    const showProofSubmission = (proofType) => { /* ... (same as before) ... */ };
-    const hideProofSubmission = () => { /* ... (same as before) ... */ };
-    const handleProofSubmit = (event) => { /* ... (same as before) ... */ console.log("[script.js] Transmitting verification data..."); };
-    const simulateVerification = (quest, proofData) => { /* ... (same as before) ... */ console.log(`[script.js] Simulating verification...`); return { verified: true, message: "Simulated Pass", reason: null }; }; // Simplified for brevity
-    const handleQuestVerified = (quest, successMessage) => { /* ... (same as before, includes skill drop call) ... */ console.log(`[script.js] Directive Verified: ${quest.title}`); };
-    const handleQuestFailed = (failMessage, reason) => { /* ... (same as before) ... */ console.warn(`[script.js] Directive Failed: ${currentQuest?.title}. Reason: ${reason}`); };
+    const showProofSubmission = (proofType) => { /* ... */ };
+    const hideProofSubmission = () => { /* ... */ };
+    const handleProofSubmit = (event) => { /* ... */ console.log("[script.js] Transmitting verification data..."); };
+    const simulateVerification = (quest, proofData) => { /* ... */ console.log(`[script.js] Simulating verification...`); return { verified: true, message: "Simulated Pass", reason: null }; }; // Simplified
+    const handleQuestVerified = (quest, successMessage) => { /* ... (same as previous version with DEBUG logs) ... */ console.log(`[script.js] Directive Verified: ${quest.title}`); };
+    const handleQuestFailed = (failMessage, reason) => { /* ... */ console.warn(`[script.js] Directive Failed: ${currentQuest?.title}. Reason: ${reason}`); };
 
     // --- Witness Verification --- (Function remains the same)
-    const handleRequestWitness = () => { /* ... (same as before) ... */ console.log(`[script.js] Requesting peer confirmation...`); };
+    const handleRequestWitness = () => { /* ... */ console.log(`[script.js] Requesting peer confirmation...`); };
 
     // --- Reflection System --- (Functions remain the same)
-    const checkForDueReflections = () => { /* ... (same as before) ... */ };
-    const showReflectionModal = (questId, questTitle) => { /* ... (same as before) ... */ };
-    window.closeReflectionModal = () => { /* ... (same as before) ... */ };
-    const handleReflectionSubmit = (event) => { /* ... (same as before) ... */ console.log(`[script.js] Submitting analysis...`); };
+    const checkForDueReflections = () => { /* ... */ };
+    const showReflectionModal = (questId, questTitle) => { /* ... */ };
+    window.closeReflectionModal = () => { /* ... */ };
+    const handleReflectionSubmit = (event) => { /* ... */ console.log(`[script.js] Submitting analysis...`); };
 
     // --- User Stats & Leveling ---
-    // Loads stats object, ensuring all keys exist
     const loadUserStats = () => {
         const defaultStats = { level: 1, xp: 0, verifiedQuests: 0, chosenClass: null }; const stats = getLocalStorage('userStats', defaultStats);
-        stats.level = stats.level || defaultStats.level; stats.xp = stats.xp || defaultStats.xp; stats.verifiedQuests = stats.verifiedQuests || defaultStats.verifiedQuests; stats.chosenClass = stats.chosenClass || defaultStats.chosenClass; // Load chosen class
+        stats.level = stats.level || defaultStats.level; stats.xp = stats.xp || defaultStats.xp; stats.verifiedQuests = stats.verifiedQuests || defaultStats.verifiedQuests;
+        // Ensure chosenClass is loaded correctly from the userStats object
+        stats.chosenClass = stats.chosenClass || getLocalStorage('chosenClass', null) || defaultStats.chosenClass; // Check both places just in case, prioritize userStats
         return stats;
     };
-    // Updates all stat displays in the UI
     const updateUserStatsDisplay = (stats) => {
-        if (!stats) { console.error("[script.js] Attempted to update display with null stats."); stats = loadUserStats(); } // Load if not provided
-        // Update DOM elements safely
-        if(playerLevelDisplay) playerLevelDisplay.textContent = stats.level;
-        if(playerXpDisplay) playerXpDisplay.textContent = stats.xp;
-        if(userStatsVerified) userStatsVerified.textContent = stats.verifiedQuests;
-        if(playerClassDisplay) playerClassDisplay.textContent = stats.chosenClass || "None"; // Display chosen class or "None"
+        if (!stats) { console.error("[script.js] Attempted to update display with null stats."); stats = loadUserStats(); }
+        if(playerLevelDisplay) playerLevelDisplay.textContent = stats.level; if(playerXpDisplay) playerXpDisplay.textContent = stats.xp; if(userStatsVerified) userStatsVerified.textContent = stats.verifiedQuests;
+        // Display the class name loaded from the stats object
+        if(playerClassDisplay) playerClassDisplay.textContent = stats.chosenClass || "None";
 
-        // Calculate and update XP Bar
+        // XP Bar Calculation (same as before)
         const currentLevel = stats.level; const currentLevelBaseXP = XP_THRESHOLDS[currentLevel - 1] !== undefined ? XP_THRESHOLDS[currentLevel - 1] : 0; const nextLevelThresholdXP = XP_THRESHOLDS[currentLevel] !== undefined ? XP_THRESHOLDS[currentLevel] : Infinity; let xpNeededForLevel = 0; let xpProgressInLevel = 0; let xpPercentage = 0;
-        if (nextLevelThresholdXP === Infinity) { if(xpToNextLevelDisplay) xpToNextLevelDisplay.textContent = "MAX"; xpPercentage = 100; } // Handle max level
-        else { xpNeededForLevel = nextLevelThresholdXP - currentLevelBaseXP; xpProgressInLevel = stats.xp - currentLevelBaseXP; if(xpToNextLevelDisplay) xpToNextLevelDisplay.textContent = nextLevelThresholdXP; if (xpNeededForLevel > 0) { xpPercentage = Math.max(0, Math.min(100, (xpProgressInLevel / xpNeededForLevel) * 100)); } } // Calculate percentage
-        if(xpBar) xpBar.style.width = `${xpPercentage}%`; // Set bar width
+        if (nextLevelThresholdXP === Infinity) { if(xpToNextLevelDisplay) xpToNextLevelDisplay.textContent = "MAX"; xpPercentage = 100; } else { xpNeededForLevel = nextLevelThresholdXP - currentLevelBaseXP; xpProgressInLevel = stats.xp - currentLevelBaseXP; if(xpToNextLevelDisplay) xpToNextLevelDisplay.textContent = nextLevelThresholdXP; if (xpNeededForLevel > 0) { xpPercentage = Math.max(0, Math.min(100, (xpProgressInLevel / xpNeededForLevel) * 100)); } }
+        if(xpBar) xpBar.style.width = `${xpPercentage}%`;
 
         console.log(`[script.js] Stats Updated: Level=${stats.level}, XP=${stats.xp}, Class=${stats.chosenClass}, Verified=${stats.verifiedQuests}, XP Bar=${xpPercentage.toFixed(1)}%`);
     };
-    // Adds XP, checks for level up, saves stats, updates UI
-     const gainXP = (amount, isBonus = false) => { /* ... (same as before) ... */ };
-    // Triggers the level up visual effect
-     const triggerLevelUpVisual = () => { /* ... (same as before) ... */ };
+    const gainXP = (amount, isBonus = false) => { /* ... (same as before) ... */ };
+    const triggerLevelUpVisual = () => { /* ... (same as before) ... */ };
 
     // --- UI Utilities --- (Functions remain the same)
-    window.showMessage = (message, type = 'info', container = messageArea) => { /* ... (same as before) ... */ };
-    const clearMessage = (container = messageArea) => { /* ... (same as before) ... */ };
-    const hideCooldownMessage = () => { /* ... (same as before) ... */ };
-    const hideNoQuestsMessage = () => { /* ... (same as before) ... */ };
+    window.showMessage = (message, type = 'info', container = messageArea) => { /* ... */ };
+    const clearMessage = (container = messageArea) => { /* ... */ };
+    const hideCooldownMessage = () => { /* ... */ };
+    const hideNoQuestsMessage = () => { /* ... */ };
 
     // --- Start the Application ---
     initializeGame(); // Start the game initialization process
 
     // Periodically check for reflections
-    setInterval(checkForDueReflections, 60 * 1000); // Check every minute
+    setInterval(checkForDueReflections, 60 * 1000);
 
 }); // End DOMContentLoaded
