@@ -1,35 +1,43 @@
-# Sacred OS - Quest Terminal
+# System // User Interface (Quest Terminal)
 
 ## Overview
 
-Sacred OS - Quest Terminal is a browser-based quest verification system designed for a conceptual spiritual evolution game. It simulates a terminal interface where players receive quests related to mystical awakening and personal growth, complete them in real life, and submit proof for simulated verification. The system emphasizes reflection and authentic engagement, incorporating cooldowns and delayed follow-ups.
+System // User Interface is a browser-based quest verification system inspired by spiritual evolution games and **Solo Leveling** themes. It simulates a terminal interface where players (Users) receive directives (quests) related to mystical awakening and personal growth, complete them in real life, and submit verification data. The system tracks **Level** and **XP**, emphasizes reflection, and incorporates cooldowns, delayed follow-ups, and a **random skill drop** mechanic upon quest completion.
 
-The project runs entirely client-side using HTML, CSS, and vanilla JavaScript, storing all player progress locally within the browser's `localStorage`.
+The project runs entirely client-side using HTML, CSS, and vanilla JavaScript, storing all User progress locally within the browser's `localStorage`.
 
 ## Theme
 
 The application adopts a "tech-mystic" or "cyberpunk shrine" aesthetic, featuring:
-* A dark color palette (black, violet, crimson)
+* A dark color palette (black, cyan, orange-red)
 * Gradient accents and subtle glow effects
 * A monospaced, terminal-like font (`Share Tech Mono`)
-* UI elements styled to resemble a sacred operating system interface
+* UI elements styled to resemble a system interface or sacred OS
 
 ## Features
 
-* **Quest Viewer:** Displays the currently available quest, including its title, description, objective, and required proof type.
-* **Quest Lifecycle:** Players can initiate quests, which reveals the proof submission interface.
+* **Quest Viewer:** Displays the currently available directive, including its title, description, objective, required proof type, and **XP reward**.
+* **Quest Lifecycle:** Users accept directives, revealing the verification data submission interface.
 * **Proof Submission:** Supports submitting different types of proof (currently implemented):
-    * **Text:** For journal entries, reflections, or descriptions.
-    * **Image:** Includes a file input (selection is checked, but content isn't processed).
-    * **Audio/Video (Simulated):** Uses a text input for describing simulated A/V proof.
-* **Simulated Verification:**
-    * Analyzes text submissions based on minimum length and the presence of relevant emotional or thematic keywords.
-    * Simulates verification for image/AV proof based on input presence.
-* **Cooldown System:** Prevents spamming by enforcing a 24-hour cooldown period after a quest is successfully verified before it (or the next one, depending on configuration) becomes available.
-* **Delayed Reflection:** Prompts the user with a reflective question via a modal popup 12 hours after a quest is verified, requiring text input to fully "seal" the quest's insights.
-* **Witness Verification (Mocked):** Includes an optional feature to enter a "witness code," simulating a request to another user to vouch for completion. A successful mock verification can influence the main verification outcome.
-* **Local Storage Persistence:** All quest progress, completion times, cooldowns, reflection status, and user stats are saved in the browser's `localStorage`.
-* **User Stats:** Displays basic statistics like "Verified Quests" and "Fragments Unlocked".
+    * **Text:** For log entries, reflections, or reports.
+    * **Image:** Includes a file input (selection is checked, content analysis is simulated).
+    * **Audio/Video (Simulated):** Uses a text input for describing simulated A/V confirmation.
+* **Simulated Verification:** Analyzes text submissions based on minimum length and keyword presence. Simulates verification for other proof types.
+* **Leveling System:**
+    * **Level:** Tracks the User's current level.
+    * **Experience Points (XP):** Awarded upon successful directive verification and reflection completion.
+    * **XP Bar:** Visually displays progress towards the next level based on defined thresholds.
+    * **Level Up:** Automatic level increase when XP threshold is met, accompanied by a visual alert.
+* **Skill Drop System:**
+    * **RNG Skill Grant:** After successful directive verification, the User has a chance to receive a random, unique spiritual skill from a predefined list.
+    * **Skill Modal:** A pop-up displays the details (Name, Type, Rarity, Description, Effect, Date Received) of a newly acquired skill with animation.
+    * **Skill Vault:** A dedicated section displays all skills the User has unlocked so far.
+    * **Rarity System:** Skills are categorized by rarity (Common, Rare, Epic, Mythic, Legendary), indicated visually in the UI.
+* **Cooldown System:** Prevents spamming by enforcing a 24-hour cooldown period after a directive is successfully verified before it becomes available again.
+* **Delayed Reflection:** Prompts the User with a "System Inquiry" via a modal popup 12 hours after a directive is verified, requiring text input (and granting bonus XP) to fully integrate the directive's outcome.
+* **Witness Verification (Mocked):** Optional feature to enter a "Peer Identifier," simulating a request for confirmation.
+* **Local Storage Persistence:** All quest progress, completion times, cooldowns, reflection status, user stats (Level, XP, Verified Quests), and **unlocked skills** are saved in the browser's `localStorage`.
+* **System-Style UI:** Notifications and text elements are styled to resemble system alerts and logs.
 * **Responsive Design:** Basic responsiveness for usability on different screen sizes.
 
 ## Technology Stack
@@ -39,42 +47,44 @@ The application adopts a "tech-mystic" or "cyberpunk shrine" aesthetic, featurin
 * **JavaScript (Vanilla):** Handles all application logic, including:
     * Quest loading and management
     * DOM manipulation and UI updates
-    * Event handling (button clicks, form submissions)
+    * Event handling
     * Proof verification simulation
     * Cooldown and reflection timing
+    * **XP and Level calculations**
+    * **Skill drop RNG and display logic**
     * Interaction with `localStorage`
 * **Google Fonts:** Uses the 'Share Tech Mono' font.
 
 ## Setup & Usage
 
-1.  **Download:** Clone this repository or download the project files (`index.html`, `style.css`, `script.js`).
-2.  **Place Files:** Ensure all three files are in the same directory.
+1.  **Download:** Clone this repository or download the project files (`index.html`, `style.css`, `script.js`, `skill-drop.js`).
+2.  **Place Files:** Ensure all four files are in the **same directory**.
 3.  **Open:** Open the `index.html` file in a modern web browser (like Chrome, Firefox, Edge, Safari).
 
-The application will initialize, load any saved progress from `localStorage`, and display the first available quest or a cooldown message.
+The application will initialize, load any saved progress from `localStorage`, display stats and unlocked skills, and show the first available directive or a cooldown message.
 
 ## How It Works
 
-* **Quest Data:** A predefined array of quest objects is stored within `script.js`.
-* **State Management:** The application manages its state (current quest, cooldowns, completed quests, stats) using JavaScript variables and persists this state to `localStorage`.
-* **Quest Availability:** On load and after actions, the script checks `localStorage` for completed quests and active cooldowns to determine which quest (if any) to display.
-* **Verification Logic:** The `simulateVerification` function in `script.js` contains the rules for checking submitted proof against quest requirements (text length, keywords, file input presence).
-* **Timers:** `Date.now()` and stored timestamps in `localStorage` are used to manage cooldowns and reflection prompt delays. `setInterval` is used for updating timer displays and periodically checking for due reflections.
+* **Quest/Directive Data:** Predefined arrays of quest objects (in `script.js`) and skill objects (in `skill-drop.js`) store their respective details, including XP rewards and skill rarities.
+* **State Management:** The application manages its state (current quest, cooldowns, completed quests, stats, unlocked skills) using JavaScript variables and persists this state to `localStorage`.
+* **Leveling:** The `gainXP` function in `script.js` adds XP and compares the total against predefined `XP_THRESHOLDS` to determine level ups.
+* **Skill Drops:** The `grantRandomSkill` function in `skill-drop.js` (called automatically after quest verification in `script.js`) filters the master skill list against skills already saved in `localStorage` (`unlockedSkills` key), randomly selects an available skill, saves its name and acquisition date, and triggers the UI updates (modal and vault).
+* **Modularity:** Core quest logic is in `script.js`, while skill-specific logic is separated into `skill-drop.js`. They communicate via globally accessible functions (`window.grantRandomSkill`, potentially `window.showMessage`, `window.get/setLocalStorage`).
 
 ## Project Files
 
-* `index.html`: The main HTML structure of the application.
-* `style.css`: Contains all the CSS rules for styling and layout.
-* `script.js`: Holds all the JavaScript logic for interactivity and state management.
+* `index.html`: The main HTML structure.
+* `style.css`: Contains all the CSS rules.
+* `script.js`: Holds the main quest, XP, and leveling logic.
+* `skill-drop.js`: Contains the skill data, RNG drop logic, and skill UI management.
 
 ## Future Ideas
 
-* Integrate actual image analysis (requires server-side or more complex client-side libraries).
-* Implement real audio/video recording or upload (requires server-side).
-* Connect to a backend database instead of `localStorage` for persistent storage across devices/browsers.
-* Expand the quest library and complexity.
-* Develop the "spiritual skill unlock" system based on stats.
-* Refine the witness verification into a functional peer-to-peer system (complex).
+* Implement weighted RNG for skill drops based on rarity.
+* Add functional effects for skills (e.g., modifying XP gain, cooldowns, quest availability).
+* Integrate actual image analysis or audio/video processing (requires server-side or complex libraries).
+* Connect to a backend database for true persistence.
+* Expand the quest and skill libraries.
 
 ## License
 
