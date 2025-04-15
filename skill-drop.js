@@ -1,4 +1,6 @@
 // skill-drop.js
+// ** IMPORTANT: This file should ONLY contain skill-related code. **
+// ** Do NOT paste code from script.js into this file. **
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
@@ -34,7 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Local Storage Functions ---
     // Use globally defined functions from script.js if available, otherwise define locally as fallback
+    // Ensures this script can potentially work even if script.js fails to expose them globally
     const getLocalStorage = window.getLocalStorage || function(key, defaultValue) {
+        console.log(`[skill-drop.js] Using ${window.getLocalStorage ? 'global' : 'local'} getLocalStorage`); // Debug which function is used
         const data = localStorage.getItem(key);
         try {
             return data ? JSON.parse(data) : defaultValue;
@@ -45,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const setLocalStorage = window.setLocalStorage || function(key, value) {
+        console.log(`[skill-drop.js] Using ${window.setLocalStorage ? 'global' : 'local'} setLocalStorage`); // Debug which function is used
         try {
             localStorage.setItem(key, JSON.stringify(value));
         } catch (e) {
@@ -118,9 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UI Functions ---
     // Populates and displays the skill drop modal
     const displayNewSkillModal = (skillData, dateReceived) => {
+        // Safety check elements needed for the modal
         if (!skillDropModal || !skillNameEl || !skillTypeEl || !skillRarityEl || !skillDescriptionEl || !skillEffectEl || !skillDateEl || !newSkillDisplay) {
-            console.error("[skill-drop.js] Modal display elements not found!");
-            return;
+            console.error("[skill-drop.js] Modal display elements not found! Cannot display new skill.");
+            return; // Exit if elements are missing
         }
         // Fill in the details in the modal elements
         skillNameEl.textContent = skillData.name;
@@ -142,32 +148,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Hides the skill drop modal
     const closeSkillModal = () => {
-        if (!skillDropModal) return;
+        if (!skillDropModal) return; // Safety check
         skillDropModal.style.display = 'none';
         console.log("[skill-drop.js] Skill modal closed.");
     };
 
     // Renders all unlocked skills into the Skill Vault section
     const displaySkillVault = () => {
+        // Safety check elements needed for the vault
         if (!skillVaultContainer) {
-            console.error("[skill-drop.js] Skill vault container not found!");
+            console.error("[skill-drop.js] Skill vault container (#skill-vault) not found!");
             return;
         }
         console.log("[skill-drop.js] Updating Skill Vault display...");
         const unlockedSkills = getUnlockedSkills(); // Get the list {name, dateReceived}
         skillVaultContainer.innerHTML = ''; // Clear previous vault entries
 
+        // Handle the message shown when no skills are unlocked
         if (unlockedSkills.length === 0) {
-            // Show the "No skills" message if the vault is empty
-            if(noSkillsMessage) noSkillsMessage.style.display = 'block';
+            if(noSkillsMessage) noSkillsMessage.style.display = 'block'; // Show the 'no skills' paragraph
         } else {
-             if(noSkillsMessage) noSkillsMessage.style.display = 'none';
+             if(noSkillsMessage) noSkillsMessage.style.display = 'none'; // Hide the 'no skills' paragraph
             // Iterate through each unlocked skill entry
             unlockedSkills.forEach(unlockedSkill => {
                 // Find the full skill details from the master ALL_SKILLS list using the name
                 const skillData = ALL_SKILLS.find(s => s.name === unlockedSkill.name);
                 if (!skillData) {
-                    // Skip if somehow the full data is missing (shouldn't happen ideally)
+                    // Skip if somehow the full data is missing
                     console.warn(`[skill-drop.js] Could not find full data for unlocked skill: ${unlockedSkill.name}`);
                     return;
                 }
