@@ -1,5 +1,5 @@
 // script.js
-// Added console.log inside handleBeginQuest
+// Added console.log to check the value of 'stats' in handleClassChoice
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
@@ -88,17 +88,85 @@ document.addEventListener('DOMContentLoaded', () => {
     let cooldownInterval = null;
 
     // --- Local Storage Functions (Global Scope) ---
-    window.getLocalStorage = (key, defaultValue) => { /* ... (same as before) ... */ };
-    window.setLocalStorage = (key, value) => { /* ... (same as before) ... */ };
+    window.getLocalStorage = (key, defaultValue) => {
+        const data = localStorage.getItem(key);
+        try { return data ? JSON.parse(data) : defaultValue; }
+        catch (e) { console.error(`[script.js] Error parsing localStorage key "${key}":`, e); return defaultValue; }
+    };
+    window.setLocalStorage = (key, value) => {
+        try { localStorage.setItem(key, JSON.stringify(value)); }
+        catch (e) { console.error(`[script.js] Error setting localStorage key "${key}":`, e); }
+    };
 
     // --- Initialization ---
-    const initializeGame = () => { /* ... (same as before) ... */ };
-    const initializeMainGame = () => { /* ... (same as before) ... */ };
+    const initializeGame = () => {
+        console.log("[script.js] Initializing System Interface...");
+        const chosenClassSaved = getLocalStorage('chosenClass', null);
+        if (!chosenClassSaved) { console.log("[script.js] No class chosen. Displaying class selection."); displayClassSelection(); if(mainGameContainer) mainGameContainer.style.display = 'none'; }
+        else { console.log(`[script.js] Class '${chosenClassSaved}' found. Starting main game.`); if(classSelectionOverlay) classSelectionOverlay.style.display = 'none'; if(mainGameContainer) mainGameContainer.style.display = 'block'; initializeMainGame(); }
+    };
+
+    const initializeMainGame = () => {
+        const initialStats = loadUserStats(); updateUserStatsDisplay(initialStats); checkForDueReflections(); loadNextQuest(); setupEventListeners(); console.log("[script.js] System Online.");
+    };
 
     // --- Class Selection Logic ---
-    const displayClassSelection = () => { /* ... (same as before) ... */ };
-    const handleClassChoice = (event) => { /* ... (same as before) ... */ };
-    const applyStartingBoon = (className) => { /* ... (same as before) ... */ };
+    const displayClassSelection = () => {
+        if (!classSelectionOverlay || !classOptionsGrid) { console.error("Class selection elements not found!"); return; }
+        classOptionsGrid.innerHTML = '';
+        CLASSES_DATA.forEach(cls => { const card = document.createElement('div'); card.className = 'class-card'; card.innerHTML = `<h3>${cls.name}</h3><p><strong>Core Concept:</strong> ${cls.concept}</p><p><strong>Starting Boon:</strong> ${cls.boon}</p><button class="choose-class-btn" data-class-name="${cls.name}">Choose ${cls.name}</button>`; classOptionsGrid.appendChild(card); });
+        classOptionsGrid.addEventListener('click', handleClassChoice);
+        classSelectionOverlay.style.display = 'flex';
+    };
+
+    // --- MODIFIED: handleClassChoice with Debugging ---
+    const handleClassChoice = (event) => {
+        if (!event.target.classList.contains('choose-class-btn')) { return; }
+        const chosenClassName = event.target.dataset.className;
+        if (!chosenClassName) return;
+
+        console.log(`[script.js] Class chosen: ${chosenClassName}`);
+
+        // Load stats first
+        const stats = loadUserStats();
+
+        // --- ADDED DEBUG LOG ---
+        console.log("[script.js] DEBUG: Value of stats before assignment:", stats);
+        // Check if stats is unexpectedly undefined or null
+        if (!stats) {
+             console.error("[script.js] ERROR: loadUserStats() returned undefined or null! Cannot set chosenClass.");
+             // Optionally display an error message to the user
+             showMessage("Critical Error: Failed to load user data. Cannot save class choice.", "error");
+             return; // Stop execution if stats object is invalid
+        }
+        // --- END ADDED DEBUG LOG ---
+
+        // Update the class property on the stats object
+        stats.chosenClass = chosenClassName;
+        // Save the entire updated stats object back to localStorage
+        setLocalStorage('userStats', stats);
+
+        // Also save directly to chosenClass key for initial load check consistency
+        setLocalStorage('chosenClass', chosenClassName);
+
+        // Apply starting boon placeholder
+        applyStartingBoon(chosenClassName);
+
+        // Hide class selection and show main game
+        if(classSelectionOverlay) classSelectionOverlay.style.display = 'none';
+        if(mainGameContainer) mainGameContainer.style.display = 'block';
+
+        // Initialize the main game systems now
+        initializeMainGame(); // This will now load stats including the class
+
+        showMessage(`Path chosen: ${chosenClassName}. Your evolution begins.`, 'success');
+    };
+
+    const applyStartingBoon = (className) => {
+        console.log(`[script.js] Applying starting boon for class: ${className}`);
+        if (className === 'Geomancer') { console.log("[script.js] Geomancer chosen - Boon logic would try to set specific starting quest here."); showMessage("Geomancer Boon: Attune to the Leylines quest should be prioritized (Implementation Pending).", "info"); }
+        // Add similar 'if' blocks for other classes.
+    };
 
     // --- Event Listeners Setup ---
     const setupEventListeners = () => { /* ... (same as before) ... */ };
@@ -108,32 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayQuest = (quest) => { /* ... (same as before - reverted version) ... */ };
     const displayCooldownMessage = (cooldownEndTime) => { /* ... */ console.log(`[script.js] System on cooldown...`); };
     const displayNoQuestsMessage = () => { /* ... */ console.log("[script.js] No available directives."); };
-
-    // --- MODIFIED: handleBeginQuest with Debugging ---
-    const handleBeginQuest = () => {
-        console.log("[script.js] DEBUG: handleBeginQuest called!"); // Log when function starts
-
-        // Check if currentQuest is valid when button is clicked
-        console.log("[script.js] DEBUG: currentQuest at handleBeginQuest:", currentQuest ? JSON.stringify(currentQuest) : "null");
-
-        if (!currentQuest) {
-             console.warn("[script.js] handleBeginQuest aborted: currentQuest is null.");
-             return; // Do nothing if no quest is loaded
-        }
-        if (!beginQuestBtn) {
-            console.error("[script.js] handleBeginQuest aborted: beginQuestBtn element not found.");
-            return; // Safety check for button element
-        }
-
-        console.log(`[script.js] Accepting Directive: ${currentQuest.title}`);
-        activeQuestStartTime = Date.now(); // Record start time (optional use)
-        beginQuestBtn.disabled = true; // Disable button while quest is active
-        beginQuestBtn.textContent = 'Directive Active...';
-        showProofSubmission(currentQuest.proofType); // Show the correct proof submission form
-        clearMessage(); // Clear any previous messages
-    };
+    const handleBeginQuest = () => { /* ... (same as previous debug version) ... */ };
     const handleCancelQuest = () => { /* ... */ console.log(`[script.js] Directive Aborted: ${currentQuest?.title}`); };
-
 
     // --- Proof Submission & Verification --- (Functions remain the same)
     const showProofSubmission = (proofType) => { /* ... */ };
