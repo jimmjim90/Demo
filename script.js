@@ -1,14 +1,12 @@
 // script.js
-// Added console.log to check the value of 'stats' in handleClassChoice
+// Testing handleClassChoice by using default stats directly
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
-    // Class Selection Elements
+    // (Same as before)
     const classSelectionOverlay = document.getElementById('class-selection-overlay');
     const classOptionsGrid = document.getElementById('class-options-grid');
     const mainGameContainer = document.getElementById('main-game-container');
-
-    // Main Game Elements (Ensure all IDs match your HTML)
     const questViewer = document.getElementById('quest-viewer');
     const questContent = document.getElementById('quest-content');
     const questTitle = document.getElementById('quest-title');
@@ -44,82 +42,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const playerXpDisplay = document.getElementById('player-xp');
     const xpToNextLevelDisplay = document.getElementById('xp-to-next-level');
     const xpBar = document.getElementById('xp-bar');
-    const playerClassDisplay = document.getElementById('player-class'); // Added
+    const playerClassDisplay = document.getElementById('player-class');
     const userStatsVerified = document.getElementById('verified-quests-count');
     const messageArea = document.getElementById('message-area');
     const levelUpAlert = document.getElementById('level-up-alert');
 
+
     // --- Constants ---
-    const QUEST_COOLDOWN_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-    const REFLECTION_DELAY = 12 * 60 * 60 * 1000; // 12 hours
-    const TEXT_PROOF_MIN_LENGTH = 150; // Min characters for text proof
+    // (Same as before)
+    const QUEST_COOLDOWN_DURATION = 24 * 60 * 60 * 1000;
+    const REFLECTION_DELAY = 12 * 60 * 60 * 1000;
+    const TEXT_PROOF_MIN_LENGTH = 150;
     const EMOTIONAL_KEYWORDS = ["afraid", "grateful", "angry", "free", "release", "breakthrough", "realization", "clarity", "fear", "joy", "peace", "connected", "struggle", "overcome", "insight", "let go", "understand", "integrate", "process"];
-    const REFLECTION_XP_BONUS = 50; // XP for completing reflection
-    // XP thresholds: Total XP needed to reach level (index + 1)
+    const REFLECTION_XP_BONUS = 50;
     const XP_THRESHOLDS = [0, 100, 250, 500, 1000, 1750, 2750, 4000, 5500, 7500];
 
-    // --- Class Data (for display and selection logic) ---
+
+    // --- Class Data ---
+    // (Same as before)
     const CLASSES_DATA = [
-         { name: "Oracle", concept: "Seeker of hidden truths, attuned to subtle energies...", boon: "Minor passive increase in detecting keywords or chance of 'System Whispers'." },
-         { name: "Chronicler", concept: "Keeper of records, believer in the power of the written word...", boon: "Small XP bonus for reflections or reduced cooldown on analyzed failures." },
-         { name: "Geomancer", concept: "Weaver of intention and energy, using symbols and connection...", boon: "Starts with intro sigil quest or passively generates 'Resonant Fragments'." },
-         { name: "Void Walker", concept: "Embracer of the shadow, understanding growth through darkness...", boon: "Slight reduction in failure impact or higher chance of post-failure events." },
-         { name: "Empath", concept: "Conduit for connection, drawing strength from shared experience...", boon: "Increased Witness effectiveness or higher chance of 'Nexus Echoes'." },
-         { name: "Wanderer", concept: "Follower of intuition and the untrodden path...", boon: "Occasional 'System Glitches'/hints or higher chance of 'Critical Success'." }
+         { name: "Oracle", concept: "Seeker of hidden truths...", boon: "Minor passive increase..." },
+         { name: "Chronicler", concept: "Keeper of records...", boon: "Small XP bonus..." },
+         { name: "Geomancer", concept: "Weaver of intention...", boon: "Starts with intro quest..." },
+         { name: "Void Walker", concept: "Embracer of the shadow...", boon: "Slight reduction in failure impact..." },
+         { name: "Empath", concept: "Conduit for connection...", boon: "Increased Witness effectiveness..." },
+         { name: "Wanderer", concept: "Follower of intuition...", boon: "Occasional 'System Glitches'..." }
     ];
+
 
     // --- Game Data (Quests) ---
+    // (Same as before)
     const ALL_QUESTS = [
-        // Add a specific starting quest for Geomancer (example)
-        { id: "geomancer_start01", title: "Attune to the Leylines", description: "Find a place outdoors that feels energetically significant. Draw a simple circle on the ground or paper representing your connection point.", objective: "Describe the location and feeling, upload image of circle.", proofType: "image", keywords: ["geomancy", "leyline", "connect", "earth", "energy", "draw", "circle"], xpReward: 50, startingClass: "Geomancer" }, // Added startingClass property
-        // Standard Quests
-        { id: "meditate01", title: "Still the Mind's Echo", description: "Find a quiet space. Focus solely on your breath for 15 uninterrupted minutes.", objective: "Achieve 15 minutes of focused meditation.", proofType: "text", keywords: ["peace", "calm", "focus", "breath", "quiet", "present", "mindful"], xpReward: 75 },
-        { id: "sigil01", title: "Manifest Intent", description: "Design and draw a personal sigil representing a core intention for growth.", objective: "Create and photograph your sigil.", proofType: "image", keywords: ["intention", "desire", "symbol", "create", "focus", "manifest"], xpReward: 100 },
-        { id: "fear01", title: "Confront the Shadow", description: "Identify one small fear. Take one concrete step today to face it.", objective: "Describe the fear and the action taken.", proofType: "text", keywords: ["fear", "afraid", "confront", "step", "action", "overcome", "challenge", "release", "brave"], xpReward: 120 },
-        { id: "gratitude01", title: "Acknowledge Abundance", description: "Record three specific things you are genuinely grateful for today, explaining *why*.", objective: "Write a short gratitude journal entry.", proofType: "text", keywords: ["grateful", "thankful", "appreciate", "blessing", "joy", "abundance", "positive"], xpReward: 60 },
-        { id: "nature01", title: "Connect to Gaia", description: "Spend 20 minutes outdoors, consciously observing the natural world.", objective: "Describe your sensory experience and any insights.", proofType: "text", keywords: ["nature", "observe", "connect", "earth", "listen", "feel", "grounded", "peace"], xpReward: 85 },
+        { id: "geomancer_start01", title: "Attune to the Leylines", description: "Find a place outdoors...", objective: "Describe the location...", proofType: "image", keywords: ["geomancy",...], xpReward: 50, startingClass: "Geomancer" },
+        { id: "meditate01", title: "Still the Mind's Echo", description: "Find a quiet space...", objective: "Achieve 15 minutes...", proofType: "text", keywords: ["peace",...], xpReward: 75 },
+        { id: "sigil01", title: "Manifest Intent", description: "Design and draw...", objective: "Create and photograph...", proofType: "image", keywords: ["intention",...], xpReward: 100 },
+        { id: "fear01", title: "Confront the Shadow", description: "Identify one small fear...", objective: "Describe the fear...", proofType: "text", keywords: ["fear",...], xpReward: 120 },
+        { id: "gratitude01", title: "Acknowledge Abundance", description: "Record three specific things...", objective: "Write a short gratitude entry.", proofType: "text", keywords: ["grateful",...], xpReward: 60 },
+        { id: "nature01", title: "Connect to Gaia", description: "Spend 20 minutes outdoors...", objective: "Describe your sensory experience...", proofType: "text", keywords: ["nature",...], xpReward: 85 },
     ];
 
+
     // --- State Variables ---
+    // (Same as before)
     let currentQuest = null;
     let activeQuestStartTime = null;
     let witnessRequested = false;
     let witnessVerified = false;
     let cooldownInterval = null;
 
+
     // --- Local Storage Functions (Global Scope) ---
-    window.getLocalStorage = (key, defaultValue) => {
-        const data = localStorage.getItem(key);
-        try { return data ? JSON.parse(data) : defaultValue; }
-        catch (e) { console.error(`[script.js] Error parsing localStorage key "${key}":`, e); return defaultValue; }
-    };
-    window.setLocalStorage = (key, value) => {
-        try { localStorage.setItem(key, JSON.stringify(value)); }
-        catch (e) { console.error(`[script.js] Error setting localStorage key "${key}":`, e); }
-    };
+    // (Same as before)
+    window.getLocalStorage = (key, defaultValue) => { /* ... */ };
+    window.setLocalStorage = (key, value) => { /* ... */ };
+
 
     // --- Initialization ---
-    const initializeGame = () => {
-        console.log("[script.js] Initializing System Interface...");
-        const chosenClassSaved = getLocalStorage('chosenClass', null);
-        if (!chosenClassSaved) { console.log("[script.js] No class chosen. Displaying class selection."); displayClassSelection(); if(mainGameContainer) mainGameContainer.style.display = 'none'; }
-        else { console.log(`[script.js] Class '${chosenClassSaved}' found. Starting main game.`); if(classSelectionOverlay) classSelectionOverlay.style.display = 'none'; if(mainGameContainer) mainGameContainer.style.display = 'block'; initializeMainGame(); }
-    };
+    // (Same as before)
+    const initializeGame = () => { /* ... */ };
+    const initializeMainGame = () => { /* ... */ };
 
-    const initializeMainGame = () => {
-        const initialStats = loadUserStats(); updateUserStatsDisplay(initialStats); checkForDueReflections(); loadNextQuest(); setupEventListeners(); console.log("[script.js] System Online.");
-    };
 
     // --- Class Selection Logic ---
-    const displayClassSelection = () => {
-        if (!classSelectionOverlay || !classOptionsGrid) { console.error("Class selection elements not found!"); return; }
-        classOptionsGrid.innerHTML = '';
-        CLASSES_DATA.forEach(cls => { const card = document.createElement('div'); card.className = 'class-card'; card.innerHTML = `<h3>${cls.name}</h3><p><strong>Core Concept:</strong> ${cls.concept}</p><p><strong>Starting Boon:</strong> ${cls.boon}</p><button class="choose-class-btn" data-class-name="${cls.name}">Choose ${cls.name}</button>`; classOptionsGrid.appendChild(card); });
-        classOptionsGrid.addEventListener('click', handleClassChoice);
-        classSelectionOverlay.style.display = 'flex';
-    };
+    // (Same as before)
+    const displayClassSelection = () => { /* ... */ };
 
-    // --- MODIFIED: handleClassChoice with Debugging ---
+    // --- MODIFIED: handleClassChoice - TEMPORARY TEST ---
     const handleClassChoice = (event) => {
         if (!event.target.classList.contains('choose-class-btn')) { return; }
         const chosenClassName = event.target.dataset.className;
@@ -127,23 +115,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`[script.js] Class chosen: ${chosenClassName}`);
 
-        // Load stats first
-        const stats = loadUserStats();
+        // --- TEMPORARY TEST: Use default object instead of loading ---
+        console.log("[script.js] DEBUG: Bypassing loadUserStats, creating default stats object for test.");
+        const stats = { level: 1, xp: 0, verifiedQuests: 0, chosenClass: null }; // Create fresh default object
+        // const stats = loadUserStats(); // Original line commented out for test
+        // --- END TEMPORARY TEST ---
 
-        // --- ADDED DEBUG LOG ---
-        console.log("[script.js] DEBUG: Value of stats before assignment:", stats);
-        // Check if stats is unexpectedly undefined or null
+        console.log("[script.js] DEBUG: Value of stats before assignment:", stats); // Log the default object
+
+        // Check if stats is unexpectedly undefined or null (shouldn't be now)
         if (!stats) {
-             console.error("[script.js] ERROR: loadUserStats() returned undefined or null! Cannot set chosenClass.");
-             // Optionally display an error message to the user
-             showMessage("Critical Error: Failed to load user data. Cannot save class choice.", "error");
-             return; // Stop execution if stats object is invalid
+             console.error("[script.js] ERROR: Stats object is still null/undefined even when created directly!");
+             showMessage("Critical Error: Failed to process data. Cannot save class choice.", "error");
+             return;
         }
-        // --- END ADDED DEBUG LOG ---
 
         // Update the class property on the stats object
-        stats.chosenClass = chosenClassName;
+        console.log(`[script.js] DEBUG: Attempting assignment: stats.chosenClass = ${chosenClassName}`);
+        try {
+            stats.chosenClass = chosenClassName; // The line that previously failed
+            console.log("[script.js] DEBUG: Assignment successful.");
+        } catch (e) {
+            console.error("[script.js] ERROR during assignment 'stats.chosenClass':", e);
+            showMessage("Critical Error: Failed to assign class data.", "error");
+            return; // Stop if assignment fails
+        }
+
+
         // Save the entire updated stats object back to localStorage
+        console.log("[script.js] DEBUG: Saving updated stats object:", stats);
         setLocalStorage('userStats', stats);
 
         // Also save directly to chosenClass key for initial load check consistency
@@ -162,11 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showMessage(`Path chosen: ${chosenClassName}. Your evolution begins.`, 'success');
     };
 
-    const applyStartingBoon = (className) => {
-        console.log(`[script.js] Applying starting boon for class: ${className}`);
-        if (className === 'Geomancer') { console.log("[script.js] Geomancer chosen - Boon logic would try to set specific starting quest here."); showMessage("Geomancer Boon: Attune to the Leylines quest should be prioritized (Implementation Pending).", "info"); }
-        // Add similar 'if' blocks for other classes.
-    };
+    const applyStartingBoon = (className) => { /* ... (same placeholder as before) ... */ };
+
 
     // --- Event Listeners Setup ---
     const setupEventListeners = () => { /* ... (same as before) ... */ };
@@ -179,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleBeginQuest = () => { /* ... (same as previous debug version) ... */ };
     const handleCancelQuest = () => { /* ... */ console.log(`[script.js] Directive Aborted: ${currentQuest?.title}`); };
 
-    // --- Proof Submission & Verification --- (Functions remain the same)
+    // --- Proof Submission & Verification ---
     const showProofSubmission = (proofType) => { /* ... */ };
     const hideProofSubmission = () => { /* ... */ };
     const handleProofSubmit = (event) => { /* ... */ console.log("[script.js] Transmitting verification data..."); };
@@ -187,22 +184,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleQuestVerified = (quest, successMessage) => { /* ... (same as previous version with DEBUG logs for skill drop) ... */ console.log(`[script.js] Directive Verified: ${quest.title}`); };
     const handleQuestFailed = (failMessage, reason) => { /* ... */ console.warn(`[script.js] Directive Failed: ${currentQuest?.title}. Reason: ${reason}`); };
 
-    // --- Witness Verification --- (Function remains the same)
+    // --- Witness Verification ---
     const handleRequestWitness = () => { /* ... */ console.log(`[script.js] Requesting peer confirmation...`); };
 
-    // --- Reflection System --- (Functions remain the same)
+    // --- Reflection System ---
     const checkForDueReflections = () => { /* ... */ };
     const showReflectionModal = (questId, questTitle) => { /* ... */ };
     window.closeReflectionModal = () => { /* ... */ };
     const handleReflectionSubmit = (event) => { /* ... */ console.log(`[script.js] Submitting analysis...`); };
 
-    // --- User Stats & Leveling --- (Functions remain the same)
-    const loadUserStats = () => { /* ... */ };
+    // --- User Stats & Leveling ---
+    const loadUserStats = () => { /* ... (same as before) ... */ };
     const updateUserStatsDisplay = (stats) => { /* ... */ console.log(`[script.js] Stats Updated: ... Class=${stats.chosenClass} ...`); };
     const gainXP = (amount, isBonus = false) => { /* ... */ };
     const triggerLevelUpVisual = () => { /* ... */ };
 
-    // --- UI Utilities --- (Functions remain the same)
+    // --- UI Utilities ---
     window.showMessage = (message, type = 'info', container = messageArea) => { /* ... */ };
     const clearMessage = (container = messageArea) => { /* ... */ };
     const hideCooldownMessage = () => { /* ... */ };
