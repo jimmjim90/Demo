@@ -39,9 +39,9 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
-    display: flex;
+    display: flex; /* Use flex for centering overlay if needed */
     justify-content: center;
-    align-items: flex-start;
+    align-items: flex-start; /* Align main container to top */
     min-height: 100vh;
     padding: 20px;
     background-image:
@@ -49,8 +49,106 @@ body {
         radial-gradient(circle at top left, var(--glow-color-primary), transparent 50%),
         radial-gradient(circle at bottom right, var(--glow-color-secondary), transparent 50%);
     background-attachment: fixed;
+    position: relative; /* Needed for overlay positioning */
 }
 
+/* --- Class Selection Overlay Styles --- */
+.class-overlay {
+    position: fixed; /* Cover the whole screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95); /* Very dark overlay */
+    z-index: 2000; /* Ensure it's on top */
+    display: flex; /* Use flex to center content */
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* Padding around the container */
+    animation: fadeInOverlay 0.5s ease-in-out; /* Fade in animation */
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.class-selection-container {
+    background-color: var(--panel-background);
+    border: 2px solid var(--primary-accent);
+    box-shadow: 0 0 25px var(--glow-color-primary);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    max-width: 900px; /* Allow wider container for grid */
+    width: 100%;
+    text-align: center;
+    max-height: 90vh; /* Limit height to prevent overflow */
+    overflow-y: auto; /* Allow scrolling if content exceeds height */
+}
+
+.class-selection-container h1 {
+    color: var(--primary-accent);
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px var(--glow-color-primary);
+}
+
+.class-selection-container p {
+    margin-bottom: 25px;
+    color: var(--text-color);
+    font-size: 1.1em;
+}
+
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Responsive grid for class cards */
+    gap: 20px; /* Spacing between cards */
+}
+
+.class-card { /* Style for individual class choice cards */
+    background-color: #2a2a2a; /* Slightly lighter background */
+    border: 1px solid var(--primary-accent);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: left; /* Align text left within card */
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease; /* Hover effects */
+}
+
+.class-card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 8px 20px rgba(77, 255, 255, 0.3); /* Glow effect on hover */
+}
+
+.class-card h3 { /* Class name title */
+    color: var(--secondary-accent); /* Use secondary color for class names */
+    margin-bottom: 10px;
+    border-bottom: 1px dashed var(--primary-accent);
+    padding-bottom: 8px;
+    font-size: 1.3em;
+}
+
+.class-card p { /* Description text */
+    font-size: 0.95em; /* Slightly smaller text */
+    margin-bottom: 8px;
+    color: #ccc; /* Lighter grey for details */
+}
+
+.class-card strong { /* Labels like "Core Concept:" */
+    color: var(--primary-accent);
+    display: block; /* Make labels appear on their own line */
+    margin-bottom: 3px;
+    font-size: 1em;
+}
+
+.class-card button { /* "Choose Class" button */
+    width: 100%; /* Make button full width of card */
+    margin-top: 15px; /* Space above button */
+    padding: 12px; /* Larger button padding */
+    font-size: 1.1em;
+}
+/* --- End Class Selection Styles --- */
+
+
+/* Main Game Container */
 .container {
     width: 100%;
     max-width: 800px;
@@ -61,13 +159,10 @@ body {
     backdrop-filter: blur(3px);
     padding: var(--panel-padding);
     animation: fadeIn 1s ease-in-out;
+    /* display: block; set by default, JS hides if needed */
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
+/* Header and Stats */
 header {
     text-align: center;
     margin-bottom: var(--panel-margin);
@@ -83,15 +178,14 @@ header h1 {
     letter-spacing: 2px;
 }
 
-/* Updated Stats Panel */
 .stats-panel {
     background: rgba(26, 26, 26, 0.8);
     padding: 15px;
     border-radius: var(--border-radius);
     border: 1px solid var(--primary-accent);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adjusted minmax for more items */
+    gap: 10px 15px; /* Row and column gap */
     font-size: 1em;
     margin-top: 10px;
     text-align: center;
@@ -99,35 +193,34 @@ header h1 {
 
 .stats-panel div {
     color: var(--text-color);
-    padding: 5px;
+    padding: 5px 0; /* Adjusted padding */
 }
 
 .stats-panel span {
      color: var(--primary-accent);
      font-weight: bold;
 }
-
-/* XP Bar Styles */
+/* Ensure XP bar spans full width */
 .xp-bar-container {
+    grid-column: 1 / -1; /* Span all columns */
     background-color: #333;
     border-radius: var(--border-radius);
     height: 15px;
     overflow: hidden;
     border: 1px solid var(--secondary-accent);
-    grid-column: 1 / -1;
     margin-top: 5px;
 }
 
 .xp-bar-fill {
     height: 100%;
-    width: 0%;
+    width: 0%; /* JS updates this */
     background-color: var(--xp-bar-color);
     border-radius: var(--border-radius);
     transition: width var(--transition-speed) ease-out;
     box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
-
+/* Main Content Panels */
 main {
     padding: 0;
 }
@@ -164,7 +257,7 @@ main {
     color: var(--primary-accent);
 }
 
-/* Form Styling */
+/* Forms */
 .form-group {
     margin-bottom: 15px;
 }
@@ -204,25 +297,25 @@ main {
     color: #888;
 }
 
-/* Button Styling */
+/* Buttons */
 button {
     font-family: var(--font-family);
     padding: 10px 20px;
     border: 1px solid var(--primary-accent);
     border-radius: var(--border-radius);
     background: linear-gradient(45deg, var(--secondary-accent), var(--primary-accent));
-    color: #000;
+    color: #000; /* Black text */
     cursor: pointer;
     transition: all var(--transition-speed) ease;
     font-size: 1em;
-    margin-right: 10px;
+    margin-right: 10px; /* Default spacing */
     text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
     font-weight: bold;
     letter-spacing: 1px;
 }
-/* Specific button styling */
+/* Specific button for manual skill drop */
 #receive-skill-btn {
-    background: linear-gradient(45deg, #9933FF, #FFD700); /* Purple/Gold gradient */
+    background: linear-gradient(45deg, #9933FF, #FFD700); /* Purple/Gold */
     border-color: #FFD700;
     color: #000;
 }
@@ -231,172 +324,88 @@ button {
     filter: brightness(1.2);
     transform: translateY(-2px);
 }
-
-
+/* General button hover */
 button:hover {
     box-shadow: 0 0 15px var(--glow-color-primary);
     filter: brightness(1.2);
     transform: translateY(-2px);
 }
-
+/* General button active state */
 button:active {
     transform: translateY(0);
     filter: brightness(1);
 }
-
+/* Cancel/Close buttons */
 #cancel-quest-btn,
 .close-btn {
-    background: #444;
+    background: #444; /* Dark grey */
     border-color: #666;
-    color: #ccc;
+    color: #ccc; /* Light grey text */
 }
-
 #cancel-quest-btn:hover,
 .close-btn:hover {
      background: #666;
      box-shadow: 0 0 10px rgba(150, 150, 150, 0.5);
 }
 
-/* Message Box - System Alert Style */
+/* Messages & Alerts */
 .message-box {
     padding: 15px;
     margin-bottom: var(--panel-margin);
     border-radius: var(--border-radius);
-    text-align: left;
+    text-align: left; /* Align left like logs */
     font-weight: bold;
     transition: all var(--transition-speed) ease;
-    border-left: 5px solid;
-    position: relative;
+    border-left: 5px solid; /* Colored left border */
+    position: relative; /* For pseudo-element */
 }
-
-.message-box::before {
+.message-box::before { /* Add "[System Alert] " prefix */
     content: "[System Alert] ";
     font-weight: bold;
     margin-right: 5px;
 }
-
-.message-box.success {
-    background-color: rgba(77, 255, 150, 0.1);
-    border-left-color: #4DFF96;
-    color: #4DFF96;
-}
+.message-box.success { background-color: rgba(77, 255, 150, 0.1); border-left-color: #4DFF96; color: #4DFF96; }
 .message-box.success::before { color: #4DFF96; }
-
-
-.message-box.error {
-    background-color: rgba(255, 69, 0, 0.1);
-    border-left-color: var(--secondary-accent);
-    color: var(--secondary-accent);
-}
+.message-box.error { background-color: rgba(255, 69, 0, 0.1); border-left-color: var(--secondary-accent); color: var(--secondary-accent); }
 .message-box.error::before { color: var(--secondary-accent); }
-
-.message-box.info {
-    background-color: rgba(77, 255, 255, 0.1);
-    border-left-color: var(--primary-accent);
-    color: var(--primary-accent);
-}
+.message-box.info { background-color: rgba(77, 255, 255, 0.1); border-left-color: var(--primary-accent); color: var(--primary-accent); }
 .message-box.info::before { color: var(--primary-accent); }
 
-/* Level Up Box */
 .level-up-box {
-    padding: 20px;
-    margin-bottom: var(--panel-margin);
-    border-radius: var(--border-radius);
-    text-align: center;
-    font-weight: bold;
-    font-size: 2em;
-    color: #fff;
+    padding: 20px; margin-bottom: var(--panel-margin); border-radius: var(--border-radius);
+    text-align: center; font-weight: bold; font-size: 2em; color: #fff;
     background: linear-gradient(45deg, var(--primary-accent), var(--secondary-accent));
-    border: 2px solid #fff;
-    box-shadow: 0 0 25px var(--glow-color-primary), 0 0 35px var(--glow-color-secondary);
-    text-shadow: 0 0 10px #000;
-    animation: levelUpPulse 1.5s ease-in-out infinite;
-    display: none;
+    border: 2px solid #fff; box-shadow: 0 0 25px var(--glow-color-primary), 0 0 35px var(--glow-color-secondary);
+    text-shadow: 0 0 10px #000; animation: levelUpPulse 1.5s ease-in-out infinite; display: none; /* Hidden by default */
 }
-
-@keyframes levelUpPulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-}
+@keyframes levelUpPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
 
 /* Witness Section */
-.witness-section {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px dashed var(--secondary-accent);
-}
-.witness-section h4{
-    color: var(--secondary-accent);
-    margin-bottom: 10px;
-}
-#witness-status {
-    margin-top: 10px;
-    font-style: italic;
-    color: #aaa;
-}
+.witness-section { margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--secondary-accent); }
+.witness-section h4{ color: var(--secondary-accent); margin-bottom: 10px; }
+#witness-status { margin-top: 10px; font-style: italic; color: #aaa; }
 
-/* Cooldown/Timer Display */
-#quest-timer, #cooldown-message p {
-    margin-top: 15px;
-    font-size: 1.1em;
-    color: var(--secondary-accent);
-}
+/* Timers */
+#quest-timer, #cooldown-message p { margin-top: 15px; font-size: 1.1em; color: var(--secondary-accent); }
 
-/* --- Skill System Styles --- */
-
-/* Skill Vault */
-.skill-vault-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid */
-    gap: 15px;
+/* Skill System Styles */
+.skill-vault-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+.skill-card { /* Used for vault AND modal display */
+    background-color: #2a2a2a; border: 1px solid var(--primary-accent); border-radius: var(--border-radius); padding: 15px;
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease; position: relative; overflow: hidden;
 }
-
-.skill-card {
-    background-color: #2a2a2a; /* Slightly lighter than panel */
-    border: 1px solid var(--primary-accent);
-    border-radius: var(--border-radius);
-    padding: 15px;
-    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    position: relative; /* For rarity glow/border */
-    overflow: hidden; /* Contain glow */
-}
-
-.skill-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-}
-
-.skill-card h3 {
-    color: var(--primary-accent); /* Skill name color */
-    margin-bottom: 8px;
-    border-bottom: 1px solid var(--secondary-accent);
-    padding-bottom: 5px;
-}
-
-.skill-card p {
-    margin-bottom: 5px;
-    font-size: 0.9em;
-}
-.skill-card p strong {
-    color: var(--text-color); /* Less emphasis than panel strong */
-    margin-right: 5px;
-}
-.skill-card small {
-    font-size: 0.8em;
-    color: #888;
-    display: block;
-    margin-top: 10px;
-}
-
-/* Skill Rarity Styling using data-attribute */
+.skill-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); }
+.skill-card h3 { color: var(--primary-accent); margin-bottom: 8px; border-bottom: 1px solid var(--secondary-accent); padding-bottom: 5px; }
+.skill-card p { margin-bottom: 5px; font-size: 0.9em; }
+.skill-card p strong { color: var(--text-color); margin-right: 5px; }
+.skill-card small { font-size: 0.8em; color: #888; display: block; margin-top: 10px; }
+/* Rarity styling via data-attribute */
 .skill-card[data-rarity="Common"] { border-left: 5px solid var(--rarity-common); }
 .skill-card[data-rarity="Rare"] { border-left: 5px solid var(--rarity-rare); }
 .skill-card[data-rarity="Epic"] { border-left: 5px solid var(--rarity-epic); }
 .skill-card[data-rarity="Mythic"] { border-left: 5px solid var(--rarity-mythic); }
 .skill-card[data-rarity="Legendary"] { border-left: 5px solid var(--rarity-legendary); }
-
-/* Style the rarity text itself */
+/* Rarity text color */
 .skill-card .rarity-label { font-weight: bold; }
 .rarity-Common { color: var(--rarity-common); }
 .rarity-Rare { color: var(--rarity-rare); }
@@ -404,150 +413,38 @@ button:active {
 .rarity-Mythic { color: var(--rarity-mythic); }
 .rarity-Legendary { color: var(--rarity-legendary); }
 
+/* Modals (General & Specific) */
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); }
+.skill-modal { animation: fadeInModal 0.5s ease, pulseGlow 1.5s infinite alternate; } /* Skill modal gets pulse */
+.modal-content { position: relative; background-color: var(--panel-background); margin: 10% auto; padding: var(--panel-padding); border: 1px solid var(--primary-accent); border-radius: var(--border-radius); width: 80%; max-width: 600px; box-shadow: 0 5px 25px var(--glow-color-primary); }
+.skill-modal-content { border: 2px solid var(--primary-accent); box-shadow: 0 0 30px var(--glow-color-primary), 0 0 15px #fff inset; } /* Extra style for skill modal */
+.modal-content h2 { color: var(--primary-accent); margin-bottom: 15px; }
+.skill-modal-content h2 { text-align: center; color: var(--rarity-mythic); text-shadow: 0 0 10px var(--rarity-mythic); } /* Skill modal title */
+.modal-content p { margin-bottom: 10px; }
+.modal-content .reflection-question { font-style: italic; color: var(--secondary-accent); margin-bottom: 15px; }
+#new-skill-display { margin-top: 15px; } /* Spacing for skill display in modal */
+.close-btn { color: #aaa; position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; background: none; border: none; padding: 0; line-height: 1; cursor: pointer; }
+.close-btn:hover, .close-btn:focus { color: var(--secondary-accent); text-decoration: none; }
+@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulseGlow { from { box-shadow: 0 0 15px var(--glow-color-primary); } to { box-shadow: 0 0 30px var(--glow-color-primary), 0 0 10px var(--primary-accent); } }
 
-/* Skill Drop Modal */
-.skill-modal {
-    /* Uses general modal styles */
-    animation: fadeInModal 0.5s ease, pulseGlow 1.5s infinite alternate; /* Add pulse */
-}
+/* Footer */
+footer { text-align: center; margin-top: var(--panel-margin); padding-top: var(--panel-padding); border-top: 1px dashed var(--secondary-accent); font-size: 0.8em; color: #888; }
 
-.skill-modal-content {
-     border: 2px solid var(--primary-accent); /* Thicker border for emphasis */
-     box-shadow: 0 0 30px var(--glow-color-primary), 0 0 15px #fff inset;
-}
-
-.skill-modal-content h2 {
-    text-align: center;
-    color: var(--rarity-mythic); /* Gold title */
-    text-shadow: 0 0 10px var(--rarity-mythic);
-}
-
-#new-skill-display {
-    margin-top: 15px;
-    /* Rarity border applied via data-attribute */
-}
-
-/* Animation for the modal background pulse */
-@keyframes pulseGlow {
-    from { box-shadow: 0 0 15px var(--glow-color-primary); }
-    to   { box-shadow: 0 0 30px var(--glow-color-primary), 0 0 10px var(--primary-accent); }
-}
-
-/* --- End Skill System Styles --- */
-
-
-/* Modal Styling (General) */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(5px);
-    /* animation defined per modal type */
-}
-
-@keyframes fadeInModal {
-     from { opacity: 0; }
-     to { opacity: 1; }
-}
-
-.modal-content {
-    position: relative;
-    background-color: var(--panel-background);
-    margin: 10% auto; /* Adjusted margin */
-    padding: var(--panel-padding);
-    border: 1px solid var(--primary-accent);
-    border-radius: var(--border-radius);
-    width: 80%;
-    max-width: 600px;
-    box-shadow: 0 5px 25px var(--glow-color-primary);
-}
-
-.modal-content h2 {
-     color: var(--primary-accent);
-     margin-bottom: 15px;
-}
-
-.modal-content p {
-    margin-bottom: 10px;
-}
-.modal-content .reflection-question {
-    font-style: italic;
-    color: var(--secondary-accent);
-    margin-bottom: 15px;
-}
-
-.close-btn {
-    color: #aaa;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 28px;
-    font-weight: bold;
-    background: none;
-    border: none;
-    padding: 0;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-    color: var(--secondary-accent);
-    text-decoration: none;
-}
-
-footer {
-    text-align: center;
-    margin-top: var(--panel-margin);
-    padding-top: var(--panel-padding);
-    border-top: 1px dashed var(--secondary-accent);
-    font-size: 0.8em;
-    color: #888;
-}
-
-/* Responsive Adjustments */
+/* Responsive */
 @media (max-width: 600px) {
-    .container {
-        padding: 15px;
-    }
-    header h1 {
-        font-size: 1.5em;
-    }
-    .stats-panel {
-        font-size: 0.9em;
-        grid-template-columns: 1fr 1fr;
-    }
-     .xp-bar-container {
-         grid-column: 1 / -1;
-     }
-    .panel {
-        padding: 15px;
-    }
-    button {
-        padding: 10px 15px;
-        font-size: 1em;
-        width: 100%;
-        margin-bottom: 10px;
-        margin-right: 0;
-    }
-    button:last-of-type {
-        margin-bottom: 0;
-    }
-    .modal-content {
-        width: 90%;
-        margin: 15% auto; /* Adjusted margin */
-        padding: 15px;
-    }
-    .level-up-box {
-        font-size: 1.5em;
-    }
-    .skill-vault-container {
-        grid-template-columns: 1fr; /* Single column on small screens */
-    }
+    body { padding: 10px; } /* Reduce body padding */
+    .container, .class-selection-container { padding: 15px; } /* Consistent padding */
+    header h1 { font-size: 1.5em; }
+    .stats-panel { font-size: 0.9em; grid-template-columns: 1fr 1fr; gap: 5px 10px; } /* Simpler grid for stats */
+     .xp-bar-container { grid-column: 1 / -1; } /* Ensure XP bar spans full width */
+    .panel { padding: 15px; }
+    button { padding: 10px 15px; font-size: 1em; width: 100%; margin-bottom: 10px; margin-right: 0; } /* Full width buttons */
+    button:last-of-type { margin-bottom: 0; }
+    .modal-content { width: 95%; margin: 15% auto; padding: 15px; } /* Adjust modal on mobile */
+    .level-up-box { font-size: 1.5em; }
+    .skill-vault-container { grid-template-columns: 1fr; } /* Stack skills */
+    .class-grid { grid-template-columns: 1fr; } /* Stack classes vertically */
+    .class-selection-container { padding: 20px; max-height: 85vh;} /* Adjust class selection padding */
 }
+
