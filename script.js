@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System // User Interface</title> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>[ System // User Interface ]</h1> <div id="user-stats" class="stats-panel">
+                <div>Level: <span id="player-level">1</span></div>
+                <div>XP: <span id="player-xp">0</span> / <span id="xp-to-next-level">100</span></div>
+                <div class="xp-bar-container">
+                    <div id="xp-bar" class="xp-bar-fill"></div>
+                </div>
+                <div>Verified Quests: <span id="verified-quests-count">0</span></div>
+                </div>
+        </header>
+
+        <main>
+            <div id="message-area" class="message-box" style="display: none;"></div>
+            <div id="level-up-alert" class="level-up-box" style="display: none;">LEVEL UP!</div>
+
+            <section id="quest-viewer" class="panel">
+                <h2>// Daily Quest //</h2> <div id="quest-content">
+                    <h3 id="quest-title">Loading Directive...</h3> <p id="quest-description">Awaiting system command...</p> <p><strong>Objective:</strong> <span id="quest-objective">Standby...</span></p>
+                    <p><strong>Required Proof:</strong> <span id="quest-proof-type">Analyzing...</span></p>
+                    <p><strong>Reward:</strong> <span id="quest-reward">---</span> XP</p> <div id="quest-timer" style="display: none;">Time Remaining: <span id="timer-display">--:--</span></div>
+                    <button id="begin-quest-btn">Accept Directive</button> </div>
+                <div id="cooldown-message" style="display: none;">
+                    <p>System recalibrating... Next directive available after cooldown.</p> <p>Time remaining: <span id="cooldown-timer">--:--:--</span></p>
+                </div>
+                 <div id="no-quests-message" style="display: none;">
+                    <p>No active directives found. System is idle.</p> </div>
+            </section>
+
+            <section id="proof-submission" class="panel" style="display: none;">
+                <h2>// Submit Verification Data //</h2> <form id="proof-form">
+                    <input type="hidden" id="current-quest-id">
+                    <div id="text-proof-group" class="form-group" style="display: none;">
+                        <label for="text-proof">Log Entry / Report:</label> <textarea id="text-proof" name="text-proof" rows="6" placeholder="Record completion data... Minimum 150 characters for system analysis."></textarea> </div>
+                    <div id="image-proof-group" class="form-group" style="display: none;">
+                        <label for="image-proof">Upload Visual Confirmation:</label> <input type="file" id="image-proof" name="image-proof" accept="image/*">
+                        <small>Note: File selection verified. Content analysis simulated.</small> </div>
+                    <div id="audio-video-proof-group" class="form-group" style="display: none;">
+                        <label for="av-proof">Log Auditory/Visual Confirmation (Simulated):</label> <input type="text" id="av-proof" name="av-proof" placeholder="Describe A/V confirmation data (simulation)."> <small>Note: A/V upload not supported. Describe confirmation.</small> </div>
+                    <button type="submit" id="submit-proof-btn">Transmit Data</button> <button type="button" id="cancel-quest-btn">Abort Directive</button> </form>
+                 <div id="witness-verification" class="witness-section">
+                    <hr>
+                    <h4>Optional: Request Peer Confirmation</h4> <div class="form-group">
+                         <label for="witness-code">Enter Peer Identifier:</label> <input type="text" id="witness-code" placeholder="e.g., ally_node_delta"> <button id="request-witness-btn">Request Confirmation</button> <small>Simulated: Sends mock request.</small>
+                         <p id="witness-status" style="display: none;"></p>
+                    </div>
+                 </div>
+            </section>
+
+            <div id="reflection-modal" class="modal" style="display: none;">
+                <div class="modal-content panel">
+                    <span class="close-btn" onclick="closeReflectionModal()">&times;</span>
+                    <h2>// System Inquiry //</h2> <p id="reflection-quest-title">Regarding Directive: [Quest Title]</p>
+                    <p class="reflection-question">[System]: Analyze outcome. What core data was processed?</p> <form id="reflection-form">
+                        <input type="hidden" id="reflection-quest-id">
+                        <textarea id="reflection-text" rows="5" placeholder="Input analysis..."></textarea> <button type="submit">Finalize Analysis</button> </form>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>System Status: Online | Connection: Local Matrix (localStorage)</p> </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
